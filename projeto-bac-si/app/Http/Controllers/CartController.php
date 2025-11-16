@@ -4,9 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CartItem;
+use App\Models\Product;
 
 class CartController extends Controller
 {
+    public function index()
+    {
+        // Busca todos os produtos no banco de dados
+        $products = Product::all();
+
+        // Retorna a view 'dashboard' e passa a variável 'products' para ela
+        return view('dashboard', ['products' => $products]);
+    }
+
     /**
      * Adiciona um item ao carrinho (DE FORMA VULNERÁVEL).
      */
