@@ -44,7 +44,7 @@
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ url('/dashboard') }}" class="inline-block px-10 py-4 bg-gray-900 text-white dark:bg-gray-200 dark:text-gray-900 rounded-xl text-lg font-semibold hover:bg-gray-700 dark:hover:bg-white transition-transform transform hover:scale-105 shadow-lg">
-                                Dashboard
+                                Produtos
                             </a>
                         @else
                             <a href="{{ route('login') }}" class="inline-block px-10 py-4 bg-gray-900 text-white dark:bg-gray-200 dark:text-gray-900 rounded-xl text-lg font-semibold hover:bg-gray-700 dark:hover:bg-white transition-transform transform hover:scale-105 shadow-lg">

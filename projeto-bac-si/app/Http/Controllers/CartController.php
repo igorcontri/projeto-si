@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\CartItem;
 use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
@@ -13,57 +14,61 @@ class CartController extends Controller
         // Busca todos os produtos no banco de dados
         $products = Product::all();
 
-        // Retorna a view 'dashboard' e passa a variável 'products' para ela
-        return view('dashboard', ['products' => $products]);
+        // NOVO: Busca os itens do carrinho DO USUÁRIO LOGADO
+        $cartItems = CartItem::with('product') // 'product' é a relação que faremos
+                            ->where('user_id', Auth::id())
+                            ->get();
+
+        // Retorna a view e passa AMBAS as variáveis
+        return view('dashboard', [
+            'products' => $products,
+            'cartItems' => $cartItems // Passa os itens do carrinho
+        ]);
     }
 
     /**
      * Adiciona um item ao carrinho (DE FORMA VULNERÁVEL).
      */
-    public function add(Request $request)
+ public function add(Request $request)
     {
-        // VALIDAÇÃO BÁSICA (só para o produto)
+        // ATUALIZADO: Adicionada validação para a quantidade
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            // Note que NÃO estamos validando o user_id
+            'quantity' => 'required|integer|min:1' // Garante que a quantidade é pelo menos 1
         ]);
 
         // ==========================================================
         // A VULNERABILIDADE (IDOR) ESTÁ AQUI
         // ==========================================================
-        // Em vez de usar Auth::id() para pegar o usuário logado,
-        // vamos confiar cegamente no 'user_id' que vier da requisição.
-        
-        $userId = $request->input('user_id'); // <-- O ATACANTE PODE MUDAR ISSO
+        $userId = $request->input('user_id'); // O ATACANTE PODE MUDAR ISSO
         $productId = $request->input('product_id');
+        
+        // ATUALIZADO: Pega a quantidade do input, com padrão 1
+        $quantityToAdd = (int) $request->input('quantity', 1);
 
-        // Se o atacante não mandar um 'user_id', usamos o do usuário logado
-        // só para o app não quebrar no uso normal.
         if (!$userId) {
             $userId = $request->user()->id;
         }
-
         // ==========================================================
 
-        // Lógica simples para adicionar ou incrementar o item
+        // Lógica atualizada para adicionar a quantidade
         $cartItem = CartItem::where('user_id', $userId)
                             ->where('product_id', $productId)
                             ->first();
 
         if ($cartItem) {
-            // Se já existe, apenas incrementa a quantidade
-            $cartItem->quantity++;
+            // Se já existe, SOMA a nova quantidade
+            $cartItem->quantity += $quantityToAdd;
             $cartItem->save();
         } else {
-            // Se não existe, cria o novo item no carrinho
+            // Se não existe, cria o item com a nova quantidade
             CartItem::create([
-                'user_id' => $userId, // <-- AQUI A FALHA É EXPLORADA
+                'user_id' => $userId,
                 'product_id' => $productId,
-                'quantity' => 1
+                'quantity' => $quantityToAdd // Usa a quantidade do formulário
             ]);
         }
 
-        // Redireciona de volta (ou retorna um JSON, mas para Blade é mais fácil assim)
-        return back()->with('message', 'Produto adicionado ao carrinho!');
+        return back()->with('message', 'Produto(s) adicionado(s) ao carrinho!');
     }
 }
