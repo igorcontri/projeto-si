@@ -11,6 +11,12 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="mb-4 p-4 bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-100 rounded-lg">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6">
                     <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -26,21 +32,24 @@
                                     <div>
                                         <div class="font-bold text-gray-900 dark:text-gray-100">{{ $item->product->name }}</div>
                                         <div class="text-sm text-gray-600 dark:text-gray-400">
-                                            
                                             <span class="mr-4">
                                                 Preço Unit.: R$ {{ number_format($item->product->price, 2, ',', '.') }}
                                             </span>
-                                            
                                             <span class="mr-4">
                                                 Qtd: {{ $item->quantity }}
                                             </span>
-                                            
                                             <span class="font-bold text-gray-800 dark:text-gray-200">
                                                 Total: R$ {{ number_format($item->product->price * $item->quantity, 2, ',', '.') }}
                                             </span>
-
                                         </div>
                                     </div>
+
+                                    <form action="{{ route('cart.remove', $item->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE') <button type="submit" class="px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">
+                                            Remover
+                                        </button>
+                                    </form>
                                     </div>
                             @endforeach
                         @endif
@@ -64,6 +73,7 @@
                                 <form action="{{ url('/cart/add') }}" method="POST" class="flex items-center space-x-3">
                                     @csrf 
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    
                                     <input type="hidden" name="user_id" value="{{ Auth::id() }}"> <!-- remover -->
             
                                     <input type="number" name="quantity" value="1" min="1" 

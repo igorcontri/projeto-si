@@ -31,8 +31,8 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1' 
         ]);
 
-        $userId = $request->input('user_id');  //Modo Vunerável 
-        // $userId = Auth::id(); // Modo Seguro
+        // $userId = $request->input('user_id');  //Modo Vunerável 
+        $userId = Auth::id(); // Modo Seguro
 
         $productId = $request->input('product_id');
         
@@ -59,5 +59,18 @@ class CartController extends Controller
         }
 
         return back()->with('message', 'Produto(s) adicionado(s) ao carrinho!');
+    }
+
+    public function remove(CartItem $cartItem)
+    {
+        if ($cartItem->user_id !== Auth::id()) {
+            // Se o ID do dono do item NÃO BATE com o ID do usuário logado, retorna erro
+            return back()->with('error', 'Ação não autorizada.');
+        }
+
+        // Se a verificação passar, delete o item.
+        $cartItem->delete();
+
+        return back()->with('message', 'Item removido do carrinho.');
     }
 }

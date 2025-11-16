@@ -23,6 +23,10 @@ Route::get('/', function () {
 Route::get('/dashboard', [App\Http\Controllers\CartController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::delete('/cart/remove/{cartItem}', [App\Http\Controllers\CartController::class, 'remove'])
+     ->middleware('auth')
+     ->name('cart.remove');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
