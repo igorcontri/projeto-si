@@ -64,7 +64,7 @@
                                 <form action="{{ url('/cart/add') }}" method="POST" class="flex items-center space-x-3">
                                     @csrf 
                                     <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    <input type="hidden" name="user_id" value="{{ Auth::id() }}">
+                                    <input type="hidden" name="user_id" value="{{ Auth::id() }}"> <!-- remover -->
             
                                     <input type="number" name="quantity" value="1" min="1" 
                                            class="w-20 px-2 py-2 text-center text-gray-900 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm">
